@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.anshu.voice_recorder">
-   <application
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <application
         android:label="voice_recorder"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">

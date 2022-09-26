@@ -34,6 +34,12 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
+  flutter_sound: ^9.2.13
+  permission_handler: ^10.0.1
+  audioplayers: ^1.0.1
+  skywa_framework_widgets:
+    git:
+      url: https://github.com/skyvaSolutions/skywa_framework_widgets.git
 
 dev_dependencies:
   flutter_test:
