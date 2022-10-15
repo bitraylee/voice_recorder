@@ -1,151 +1,155 @@
-// import 'dart:io';
+import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-// import 'package:http/http.dart' as http;
-// import 'dart:async';
 
+class PlayRecorded extends StatefulWidget {
+  final File recordedFile;
 
+  const PlayRecorded({Key? key, required this.recordedFile}) : super(key: key);
 
-class PlayRecorded extends StatefulWidget{
-  final String fileLoc;
-  const PlayRecorded({Key?key, required this.title,required this.fileLoc}):super(key:key);
-  final String title;
   @override
-  State<PlayRecorded> createState()=> _PlayRecorded();
+  State<PlayRecorded> createState() => _PlayRecorded();
 }
 
-class _PlayRecorded extends State<PlayRecorded>{
-  final audioPlayer= AudioPlayer();
-  bool isPlaying=false;
-  Duration duration= Duration.zero;
-  Duration position= Duration.zero;
+class _PlayRecorded extends State<PlayRecorded> {
+  final audioPlayer = AudioPlayer();
+  bool isPlaying = false;
+  Duration duration = Duration.zero;
+  Duration position = Duration.zero;
 
-  String formatTime(Duration duration){
-    String twoDigits(int n)=>n.toString().padLeft(2,'0');
-    final hours=twoDigits(duration.inHours);
-    final minutes=twoDigits(duration.inMinutes.remainder(60));
-    final seconds=twoDigits(duration.inSeconds.remainder(60));
+  String formatTime(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final hours = twoDigits(duration.inHours);
+    final minutes = twoDigits(duration.inMinutes.remainder(60));
+    final seconds = twoDigits(duration.inSeconds.remainder(60));
 
     return [
-      if(duration.inHours>0) hours,
+      if (duration.inHours > 0) hours,
       minutes,
       seconds,
     ].join(':');
   }
+
   @override
-  void initState(){
+  void initState() {
     super.initState();
-    setAudioFromLocal();
+    // setAudioFromAssets();
+    setAudioFromAudioFile();
     //playing, paused, stopped
     audioPlayer.onPlayerStateChanged.listen((state) {
       setState(() {
-        isPlaying= (state==PlayerState.playing);
+        isPlaying = (state == PlayerState.playing);
       });
     });
 
     //audio duration
     audioPlayer.onDurationChanged.listen((newDuration) {
       setState(() {
-        duration=newDuration;
+        duration = newDuration;
       });
     });
 
     //audio position
     audioPlayer.onPositionChanged.listen((newPosition) {
-      setState((){
-        position=newPosition;
+      setState(() {
+        position = newPosition;
       });
     });
+  }
 
-  }
-  Future setAudio() async {
-    String url="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
+  /*Future setAudio() async {
+    String url =
+        "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
     audioPlayer.setSourceUrl(url);
-  }
-  Future setAudioFromLocal() async{
-    final player=AudioCache(prefix:'assets/music/');
-    final url=await player.load('sample_music.mp3');
+  }*/
+
+  Future setAudioFromAssets() async {
+    final player = AudioCache(prefix: 'assets/music/');
+    final url = await player.load('sample_music.mp3');
     audioPlayer.setSourceDeviceFile(url.path);
   }
 
+  Future<void> setAudioFromAudioFile() async {
+    audioPlayer.setSourceUrl(widget.recordedFile.path);
+  }
+
   @override
-  void dispose(){
+  void dispose() {
     audioPlayer.dispose();
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context)=> Scaffold(
+  Widget build(BuildContext context) {
+    return Scaffold(
       body: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text("Recording 1",
-                        style:TextStyle(
-                            fontSize:18,
-                            color: Colors.black54
-                        )
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Recording 1",
+                    style: TextStyle(fontSize: 18, color: Colors.black54),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      isPlaying
+                          ? Icons.pause_rounded
+                          : Icons.play_arrow_rounded,
                     ),
-                    IconButton(
-                      icon: Icon(
-                        isPlaying? Icons.pause_rounded: Icons.play_arrow_rounded,
-                      ),
-                      iconSize: 30,
-                      onPressed: () async{
-                        if(isPlaying){
-                          await audioPlayer.pause();
-                        }else {
-
-                          audioPlayer.resume();
-                          //print(audioPlayer);
-                        }
-                      },
-                    )
-                  ],
-                ),
+                    iconSize: 30,
+                    onPressed: () async {
+                      if (isPlaying) {
+                        await audioPlayer.pause();
+                      } else {
+                        audioPlayer.resume();
+                        //print(audioPlayer);
+                      }
+                    },
+                  )
+                ],
               ),
-              Slider(
-                  min:0,
-                  max: duration.inSeconds.toDouble(),
-                  value: position.inSeconds.toDouble(),
-                  onChanged:(value) async{
-                    final position= Duration(seconds: value.toInt());
-                    await audioPlayer.seek(position);
-
-                    await audioPlayer.resume();
-                  }
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child:Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(formatTime(position),
-                        style:const TextStyle(
-                            fontSize:14,
-                            color: Colors.black54
-                        )
+            ),
+            Slider(
+                min: 0,
+                max: duration.inSeconds.toDouble(),
+                value: position.inSeconds.toDouble(),
+                onChanged: (value) async {
+                  final position = Duration(seconds: value.toInt());
+                  await audioPlayer.seek(position);
+                  await audioPlayer.resume();
+                }),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    formatTime(position),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.black54,
                     ),
-                    Text(formatTime(duration-position),
-                        style:const TextStyle(
-                            fontSize:14,
-                            color: Colors.black54
-                        )
-                    )
-                  ],
-                )
+                  ),
+                  Text(
+                    formatTime(duration - position),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.black54,
+                    ),
+                  )
+                ],
               ),
-
-            ],
-          )
-      )
-  );
-
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
