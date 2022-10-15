@@ -1,15 +1,17 @@
-import 'dart:io';
+// import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:async';
+// import 'package:http/http.dart' as http;
+// import 'dart:async';
 
 
 
 class PlayRecorded extends StatefulWidget{
-  const PlayRecorded({Key?key, required this.title}):super(key:key);
+  final String fileLoc;
+  const PlayRecorded({Key?key, required this.title,required this.fileLoc}):super(key:key);
   final String title;
+  @override
   State<PlayRecorded> createState()=> _PlayRecorded();
 }
 
@@ -34,6 +36,7 @@ class _PlayRecorded extends State<PlayRecorded>{
   @override
   void initState(){
     super.initState();
+    setAudioFromLocal();
     //playing, paused, stopped
     audioPlayer.onPlayerStateChanged.listen((state) {
       setState(() {
@@ -56,10 +59,19 @@ class _PlayRecorded extends State<PlayRecorded>{
     });
 
   }
+  Future setAudio() async {
+    String url="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
+    audioPlayer.setSourceUrl(url);
+  }
+  Future setAudioFromLocal() async{
+    final player=AudioCache(prefix:'assets/music/');
+    final url=await player.load('sample_music.mp3');
+    audioPlayer.setSourceDeviceFile(url.path);
+  }
+
   @override
   void dispose(){
     audioPlayer.dispose();
-
     super.dispose();
   }
 
@@ -90,11 +102,9 @@ class _PlayRecorded extends State<PlayRecorded>{
                         if(isPlaying){
                           await audioPlayer.pause();
                         }else {
-                          String url="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
 
-                          audioPlayer.setSourceUrl(url);
                           audioPlayer.resume();
-                          print(audioPlayer);
+                          //print(audioPlayer);
                         }
                       },
                     )
@@ -105,7 +115,12 @@ class _PlayRecorded extends State<PlayRecorded>{
                   min:0,
                   max: duration.inSeconds.toDouble(),
                   value: position.inSeconds.toDouble(),
-                  onChanged:(value) async{}
+                  onChanged:(value) async{
+                    final position= Duration(seconds: value.toInt());
+                    await audioPlayer.seek(position);
+
+                    await audioPlayer.resume();
+                  }
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -113,13 +128,13 @@ class _PlayRecorded extends State<PlayRecorded>{
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(formatTime(position),
-                        style:TextStyle(
+                        style:const TextStyle(
                             fontSize:14,
                             color: Colors.black54
                         )
                     ),
                     Text(formatTime(duration-position),
-                        style:TextStyle(
+                        style:const TextStyle(
                             fontSize:14,
                             color: Colors.black54
                         )

@@ -1,18 +1,30 @@
+import 'dart:ffi';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:voice_recorder/widgets/audioPlayer.dart';
 
 
 class VoiceRecorder extends StatefulWidget{
   const VoiceRecorder({Key?key, required this.title}):super(key:key);
   final String title;
+
   State<VoiceRecorder> createState()=> _VoiceRecorder();
+
 }
 
 
 class _VoiceRecorder extends State<VoiceRecorder> {
   final recorder=FlutterSoundRecorder();
+
+  String _fileName="";
+  String _fileExtension='.mp3';
+  // final String _directoryPath=;
+  final String _directoryPath = "";
+
+
   bool isRecorderReady=false;
 
 
@@ -26,7 +38,47 @@ class _VoiceRecorder extends State<VoiceRecorder> {
     recorder.closeRecorder();
     super.dispose();
   }
+  Future<String> _generateFileName() async{
+    _fileName='recording_'+DateTime.now().toString();
+    return _directoryPath + "/" + _fileName+_fileExtension;
+  }
+  // void _createFile() async{
+  //   var _completeFileName=await _generateFileName();
+  //   File(_completeFileName).create(recursive: true).then(File file)
+  // }
+  // Future<bool> _requestPermission(Permission perm) async{
+  //   final status=perm.request();
+  //   if(status!=PermissionStatus.granted){
+  //     return false;
+  //     // throw "Permission is not granted";
+  //   }
+  //   return true;
+  // }
+  Future<void> _createDirectory(String _directoryPath) async{
+    bool isCreated=await Directory(_directoryPath).exists();
+    if(!isCreated && await _hasAcceptedPermissions()){
+      Directory(_directoryPath).create().then((Directory dir) =>{
+        print(dir.path)
+      });
+    }
+  }
+  Future<bool> _hasAcceptedPermissions() async {
+    final storagePerm=await Permission.storage.request();
+    final mediaPerm=await Permission.accessMediaLocation.request();
+    final extStoragePerm=await Permission.manageExternalStorage.request();
 
+    if (storagePerm==PermissionStatus.granted &&
+        mediaPerm==PermissionStatus.granted &&
+        extStoragePerm==PermissionStatus.granted) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+  // void _writeFileToStorage() async{
+  //   _createDirectory();
+  //   _createFile();
+  // }
   Future initRecorder() async {
     final status= await Permission.microphone.request();
     if(status!=PermissionStatus.granted){
@@ -38,17 +90,22 @@ class _VoiceRecorder extends State<VoiceRecorder> {
       const Duration(milliseconds: 500),
     );
   }
-  Future record() async{
+  Future<void> record() async{
     if(!isRecorderReady) return;
     await recorder.startRecorder(toFile: 'audio');
   }
-  Future stop() async{
+  Future<void> stop() async{
     await recorder.stopRecorder();
-
-    final path= await recorder.stopRecorder();
-    print(path);
-    final audioFile=File(path!);
-
+    await _createDirectory(_directoryPath);
+    Directory? currentDir=await getExternalStorageDirectory();
+    String _path=currentDir!.path;
+    // final String _recordingName=await _generateFileName();
+    String _recordingName=_path+'/recording.mp3';
+    //TODO: Resolve the path error
+    final audioFile=File(_recordingName);
+    print(audioFile);
+    //TODO: Make simple navigation to the audio recorder with the recorded audio path;
+    // Navigator.push(context, MaterialPageRoute(builder: (context)=>PlayRecorded(title: "Playing Recording", fileLoc:"")));
   }
   @override
   Widget build(BuildContext context)=> Scaffold(

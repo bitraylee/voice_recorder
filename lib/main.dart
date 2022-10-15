@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:voice_recorder/widgets/audioPlayer.dart';
+import 'package:voice_recorder/widgets/voiceRecorder.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,7 +21,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const PlayRecorded(title: 'Simple Player'),
+      // home: const PlayRecorded(title: 'Simple Player'),
+      home: const VoiceRecorder(title: 'Simple Player'),
     );
   }
 }
