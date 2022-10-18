@@ -39,26 +39,6 @@ class _VoiceRecorder extends State<VoiceRecorder> {
     return _directoryPath + "/" + _fileName + _fileExtension;
   }
 
-  // void _createFile() async{
-  //   var _completeFileName=await _generateFileName();
-  //   File(_completeFileName).create(recursive: true).then(File file)
-  // }
-  // Future<bool> _requestPermission(Permission perm) async{
-  //   final status=perm.request();
-  //   if(status!=PermissionStatus.granted){
-  //     return false;
-  //     // throw "Permission is not granted";
-  //   }
-  //   return true;
-  // }
-  /*Future<void> _createDirectory(String _directoryPath) async {
-    bool isCreated = await Directory(_directoryPath).exists();
-    if (!isCreated && await _hasAcceptedPermissions()) {
-      Directory(_directoryPath)
-          .create()
-          .then((Directory dir) => {print(dir.path)});
-    }
-  }*/
 
   Future<bool> _hasAcceptedPermissions() async {
     final storagePerm = await Permission.storage.request();
@@ -74,10 +54,6 @@ class _VoiceRecorder extends State<VoiceRecorder> {
     }
   }
 
-  // void _writeFileToStorage() async{
-  //   _createDirectory();
-  //   _createFile();
-  // }
   Future initRecorder() async {
     final status = await Permission.microphone.request();
     if (status != PermissionStatus.granted) {
@@ -111,67 +87,64 @@ class _VoiceRecorder extends State<VoiceRecorder> {
       );
     });
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blueGrey,
-      body: Center(
-          child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          StreamBuilder<RecordingDisposition>(
-            stream: recorder.onProgress,
-            builder: (context, snapshot) {
-              final duration =
-                  snapshot.hasData ? snapshot.data!.duration : Duration.zero;
-              // String twoDigits(int n)=>n.toString().padLeft(30);
-              String twoDigits(int n) => n.toString();
-              final twoDigitMinutes =
-                  twoDigits(duration.inMinutes.remainder(60));
-              final twoDigitSeconds =
-                  twoDigits(duration.inSeconds.remainder(60));
-
-              return Text('$twoDigitMinutes:$twoDigitSeconds',
-                  style: const TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white));
-            },
-          ),
-          const SizedBox(height: 32),
-          ElevatedButton(
-            child:
-                Icon(recorder.isRecording ? Icons.stop : Icons.mic, size: 40),
-            style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.resolveWith<Color?>(
-                  (Set<MaterialState> states) {
-                    if (states.contains(MaterialState.pressed))
-                      return Colors.white30;
-                    return Colors.white10; // Use the component's default.
-                  },
-                ),
-                padding: MaterialStateProperty.resolveWith<EdgeInsets?>(
-                    (Set<MaterialState> states) {
-                  return EdgeInsets.fromLTRB(
-                      20, 20, 20, 20); // Use the component's default.
-                }),
-                shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(100.0),
-                  //side: BorderSide(color: Colors.red)
-                ))),
-            onPressed: () async {
-              if (recorder.isRecording) {
-                await stop();
-              } else {
-                await record();
-              }
-              setState(() {});
-            },
-          )
-        ],
-      )),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Recording 1",
+                    style: TextStyle(fontSize: 18, color: Colors.black54),
+                  ),
+                  StreamBuilder<RecordingDisposition>(
+                    stream: recorder.onProgress,
+                    builder: (context, snapshot) {
+                      final duration =
+                          snapshot.hasData ? snapshot.data!.duration : Duration.zero;
+                      // String twoDigits(int n)=>n.toString().padLeft(30);
+                      String twoDigits(int n) => n.toString();
+                      final twoDigitMinutes =
+                          twoDigits(duration.inMinutes.remainder(60));
+                      final twoDigitSeconds =
+                          twoDigits(duration.inSeconds.remainder(60));
+                      return Text('$twoDigitMinutes:$twoDigitSeconds',
+                        style: const TextStyle(
+                          fontSize:18,
+                          color: Colors.black54
+                        )
+                      );
+                    },
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      recorder.isRecording
+                          ? Icons.stop
+                          : Icons.mic,
+                    ),
+                    iconSize: 30,
+                    onPressed: () async {
+                      if (recorder.isRecording) {
+                        await stop();
+                      } else {
+                        await record();
+                      }
+                      setState(() {});
+                    },
+                  )
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
