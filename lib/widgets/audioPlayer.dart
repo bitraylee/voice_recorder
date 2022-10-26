@@ -4,9 +4,8 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 
 class PlayRecorded extends StatefulWidget {
-  final File recordedFile;
-
-  const PlayRecorded({Key? key, required this.recordedFile}) : super(key: key);
+  // File recordedFile;
+  const PlayRecorded({Key? key}) : super(key: key);
 
   @override
   State<PlayRecorded> createState() => _PlayRecorded();
@@ -34,9 +33,7 @@ class _PlayRecorded extends State<PlayRecorded> {
   @override
   void initState() {
     super.initState();
-    // setAudioFromAssets();
-    setAudioFromAudioFile();
-    //playing, paused, stopped
+    setAudio();
     audioPlayer.onPlayerStateChanged.listen((state) {
       setState(() {
         isPlaying = (state == PlayerState.playing);
@@ -58,11 +55,11 @@ class _PlayRecorded extends State<PlayRecorded> {
     });
   }
 
-  /*Future setAudio() async {
+  Future setAudio() async {
     String url =
         "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
     audioPlayer.setSourceUrl(url);
-  }*/
+  }
 
   Future setAudioFromAssets() async {
     final player = AudioCache(prefix: 'assets/music/');
@@ -70,9 +67,9 @@ class _PlayRecorded extends State<PlayRecorded> {
     audioPlayer.setSourceDeviceFile(url.path);
   }
 
-  Future<void> setAudioFromAudioFile() async {
+  /*Future<void> setAudioFromAudioFile() async {
     audioPlayer.setSourceUrl(widget.recordedFile.path);
-  }
+  }*/
 
   @override
   void dispose() {
